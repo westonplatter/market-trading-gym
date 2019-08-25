@@ -1,1 +1,4 @@
 *parquet*
+configs.json
+data/**/*.json
+.DS_Store

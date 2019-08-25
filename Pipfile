@@ -4,6 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+ipdb = "*"
 
 [packages]
 pandas = "~=0.23.2"
@@ -12,6 +13,8 @@ iexfinance = "*"
 pandas-compat = "*"
 requests = "*"
 pyarrow = "*"
+boto3 = "*"
+click = "*"
 
 [requires]
 python_version = "3.6"

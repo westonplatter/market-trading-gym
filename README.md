@@ -1,1 +1,1 @@
-# openaigym-trading-harness
+# market_trading_gym

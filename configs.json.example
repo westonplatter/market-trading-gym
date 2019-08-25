@@ -1,0 +1,4 @@
+{
+    "aws_profile_name": "some_value",
+    "aws_raw_data_bucket_name": "some_value"
+}

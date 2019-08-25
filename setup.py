@@ -1,7 +1,9 @@
 from setuptools import setup
 
 setup(
-    name='trading_harness',
+    name='market_trading_gym',
     version='0.0.1',
-    install_requires=['gym']
+    install_requires=[
+        'gym'
+    ]
 )
