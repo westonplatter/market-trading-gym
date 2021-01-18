@@ -1,85 +1,54 @@
+# https://towardsdatascience.com/creating-a-custom-openai-gym-environment-for-stock-trading-be532be3910e
+ 
+
+# external libs
+import datetime as dt
 import gym
-import market_trading_gym
 import numpy as np
+import os
+import pandas as pd
+from stable_baselines.common.policies import MlpPolicy
+from stable_baselines.common.vec_env import DummyVecEnv
+from stable_baselines import PPO2
 
-env = gym.make('market-trading-gym-simple-stock-v0')
+# internal libs
+from market_trading_gym.envs import InstrumentWithIndicators
 
-RENDER_ENV = False
-EPISODES = 1
-
-
-def gen_action(row):
-    return 0
-
-
-def moving_average(data_set, periods=3):
-    weights = np.ones(periods) / periods
-    return np.convolve(data_set, weights, mode='valid')
+# fixes MPI issue
+os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
 
-if __name__ == '__main__':
-    initial_state = env.reset(symbol="TLT")
-    action = gen_action(initial_state)
 
-    done = False
+def prepare_df(ddf: pd.DataFrame) -> pd.DataFrame:
+    # format headers
+    ddf.columns = [x.strip() for x in ddf.columns]
+    ddf.rename(columns={"Last": "Close"}, inplace=True)
 
-    window = 5
-    last_row = initial_state
+    # convert Date(str) and Time(str) into datetime column
+    time_values = df.Date + df.Time
+    ddf["Date"] = pd.to_datetime(
+        time_values, format="%Y/%m/%d %H:%M:%S.%f", errors="coerce"
+    )
 
+    # remove data before roll period for the March 2021 contract
+    ddf = ddf.query("Date > '2020-12-15'")
 
-    closes = np.array([])
-    actions = np.array([])
-    positions = np.array([])
-
-
-    for episode in range(EPISODES):
-        while done == False:
-            row, done = env.step(action)
-            closes = np.append(closes, [row.close])[-window:]
-
-            closes_med = np.median(closes)
-
-            ma = moving_average(closes, window)
-
-            min_diff = 0.50
-
-            diff = row.close - last_row.close
-
-            msg = f"{np.around(diff, decimals=3)}. {row.close}"
-
-            if abs(row.close - closes_med) > min_diff:
-                if diff > 0:
-                    msg += " significant vol. SHORT?"
-                    actions = np.append(actions, [-1])
-                    positions = np.append(actions, [-1])
-                else:
-                    msg += " significant vol. BUY?"
-                    actions = np.append(actions, [+1])
-                    positions = np.append(actions, [+1])
-
-            else:
-                action = 0
-                position = 0
-
-                actions = np.append(actions, [action])
-                positions = np.append(positions, [position])
+    # extract the specific RL model columns Date, OHLC, and Volume
+    desired_columns = ["Date", "Open", "High", "Low", "Close", "Volume", "VWMA", "Diff"]
+    ddf = ddf[desired_columns].copy()
+    ddf.sort_values("Date", ignore_index=True, inplace=True)
+    return ddf
 
 
-                # do I have positions to unwind?
-                # if np.isin(-1, actions[-3:]):
-                #     if np.sum(positions[-3:]) != 0:
-                #         msg += f" buy to cover. {positions[-3:]}"
-                #         actions = np.append(actions, [+1])
-                #         positions = np.append(positions, [+1])
-                # if np.isin(+1, actions[-3:]):
-                #     if np.sum(positions[-3:]) != 0:
-                #         msg += f" sell to unwind. {actions[-3:]}"
-                #         actions = np.append(actions, [-1])
-                #         positions = np.append(positions, [-1])
+df = pd.read_csv("data/m2k-renko.csv")
+df = prepare_df(df)
+env = DummyVecEnv([lambda: InstrumentWithIndicators(df)])
 
+model = PPO2(MlpPolicy, env, verbose=1)
+model.learn(total_timesteps=10_000)
 
-            print(msg)
-
-            last_row = row
-
-        # print(actions)
+obs = env.reset()
+for i in range(20_000):
+  action, _states = model.predict(obs)
+  obs, rewards, done, info = env.step(action)
+  env.render()

@@ -1,1 +1,1 @@
-from market_trading_gym.envs.simple_stock_env import SimpleStockEnv
+from market_trading_gym.envs.instrument_with_indicators import InstrumentWithIndicators
