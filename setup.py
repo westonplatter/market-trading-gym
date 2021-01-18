@@ -1,9 +1,3 @@
 from setuptools import setup
 
-setup(
-    name='market_trading_gym',
-    version='0.0.1',
-    install_requires=[
-        'gym'
-    ]
-)
+setup(name="market_trading_gym", version="0.0.1", install_requires=["gym"])

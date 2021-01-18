@@ -9,10 +9,10 @@ interval = "1min"
 
 params = {
     "symbol": symbol,
-    "apikey": environ['ALPHAADVANTAGE'],
+    "apikey": environ["ALPHAADVANTAGE"],
     "function": "TIME_SERIES_INTRADAY",
     "interval": interval,
-    "outputsize": "full"
+    "outputsize": "full",
 }
 
 url = "https://www.alphavantage.co/query"
@@ -25,7 +25,7 @@ result = []
 
 for time_str, data in ts.items():
     dp = {"timestamp": time_str}
-    for k,v in data.items():
+    for k, v in data.items():
         field = k.split(" ")[1]
         dp[field] = v
     result.append(dp)

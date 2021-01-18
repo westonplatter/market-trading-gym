@@ -10,9 +10,9 @@ def main():
 
 @click.command()
 def gen_example_configs():
-    '''
+    """
     Easily generate example configs.json file
-    '''
+    """
     with open("configs.json") as f:
         configs = json.loads(f.read())
     keys = [k for k, _ in configs.items()]

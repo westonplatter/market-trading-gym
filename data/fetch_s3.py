@@ -4,12 +4,12 @@ import os
 import boto3
 
 
-with open('../configs.json') as f:
+with open("../configs.json") as f:
     configs = json.load(f)
 
 profile_name = configs["aws_profile_name"]
 session = boto3.Session(profile_name=profile_name)
-s3 = session.resource('s3')
+s3 = session.resource("s3")
 
 bucket_name = configs["aws_raw_data_bucket_name"]
 my_bucket = s3.Bucket(bucket_name)
